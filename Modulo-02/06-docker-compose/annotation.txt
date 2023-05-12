@@ -1,0 +1,68 @@
+# O que é Docker compose ?
+ - Docker compose é uma ferramenta desenvolvida para ajudar a definir e compartilhar aplicativos com vários contêineres. Com o o Compose, você pode criar um arquivo YAML para definir os serviços e com um único comando, pode rodar todos os contêineres ou para-los.
+
+# Instalar o docker-compose
+ - No Linux/Ubuntu -> apt-get install -y docker-compose;
+ 
+# subindo um docker-compose
+
+ - Com o docker-compose instalado na maquina, verificar sempre a versão do Dokcer quando criar os arquivos para subir as imagens no site: 
+ https://docs.docker.com/compose/compose-file/compose-versioning/;
+
+ - Criar a pasta bind na maquina local -> mkdir /data/mysql-CMD;
+ - Criar o arquivo compose na pasta /compose -> mkdir /compose/primeiro;
+ - Criar arquivo docker-compose.yml (lembrando que precisa ter esse nome) e escrever os seguintes codigos respeitando a identação: 
+   version: '3.8' -> especifica a versão do arquivo do docker compose;
+   services: ->  
+     mysqlsrv: -> serviço 
+       image: mysql:5.7 -> imagem
+       environment:
+         MYSQL_ROOT_PASSWORD: "Senha123" - variaveis de ambiente
+         MYSQL_DATABASE: "testedb" - variaveis de ambiente
+       ports:
+         - "3306:3306" - porta
+       volumes:
+         - /data/mysql-C:/var/lib/mysql -caminho da pasta bind:caminho dentro do container
+       networks:
+         - minha-rede - selecionado a rede criada (minha-rede)
+     adminer: -> serviço
+       image: adminer - imagem
+     ports:
+       - 8080:8080 - portas
+     networks:
+       - minha-rede selecionado a rede criada (minha-rede)
+   networks: - bloco para criar rede
+     minha-rede: - nome da rede
+       driver: bridge - selecionado o driver bridge
+ 
+ - logo apos salvar o arquivo ctrl O e ctrl X;
+ - para subir esse arquivo usar o comando docker-compose up -d na mesma pasta do arquivo .yml;
+
+
+# Docker compose Down
+ - na mesmo local do arquivo .yml executar o comando -> docker-compose down -> esse comando vai parar o container e exclui-lo;
+
+# Exemplo PHP Apache MYSQL
+
+ - Criar uma pasta /data/php, dentro desta pasta criar um arquivo index.php e copiar o codigo php+html do arquivo d.Exemplo;
+ - Criar uma pasta /data/php/admin, dentro desta pasta criar um arquivo chamado uploads.ini e copiar as configurações que esta no arquivo d.Exemplo;
+
+ - Criar uma pasta /compose/php-mysql, dentro desta pasta criar um arquivo docker-compose.yml e copiar o codigo do docker.yml;
+ - para executar, na pasta do arquivo .yml, executar o comando docker-compose up -d (para rodar em segundo plano) ou docker-compose up (para rodar em primeiro plano);
+ 
+ - Para acessar a aplicação 
+    * phpmyadmin -> ip_da_maquina:8080;
+    * aplicação php -> ip_da_maquina:4500;
+
+# Utiliizando exemplos do Github do Docker
+
+ - acessar a pagina https://github.com/docker/awesome-compose, ir até Basic setups for different platforms (not production ready - useful for personal use) e selecionar Nextcloud / Redis / MariaDB;
+
+ - clique em compose.yaml e copie o codigo e acrescente version: '3.7' antes de services:;
+ - Crie uma pasta /compose/cloud, dentro desta pasta crie um arquivo docker-compose.yml e cole o codigo copiado na linha anterior;
+ - agora na mesma pasta do arquivo .yml execute o comando docker-compose up -d;
+ - acesse atraves do ip da maquina e porta especificada ip_da_maquina:porta;
+ - o nextcloud vai pedir para criar um usuario, e dessa forma você consegue usar um container para armazenamento de nuvem local;
+
+ - os dados serão salvos em /var/lib/docker/volumes/cloud_db_data/_data 
+

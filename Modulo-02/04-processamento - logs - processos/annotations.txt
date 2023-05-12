@@ -1,0 +1,29 @@
+# verificar status do container
+
+docker stats php-A -> verifica o consumo do container php-A;
+
+docker update -m 128M --memory-swap -1 php-A --cpus 0.2 -> da um limite a capacidade de limite do container;
+
+docker run --name name_container -dti -m qtd_memoryM --cpus 0.2 name_image -> cria um container expecificando o consumo de memoria e CPU;
+
+# logs
+
+docker info -> docker info mostra os container, os container em execução, os container pausados e as imagens;
+
+docker container logs name_container -> exibira todos os logs do container;
+
+docker container top name_container -> mostra quais processos que estão em execução no container;
+
+# redes
+
+docker network ls -> mostra as redes disponiveis;
+
+docker network inspect bridge -> verifica o ip dos containers;
+
+docker network create name_rede -> cria uma rede;
+
+docker run -dti --name name_container --network name_rede name_image -> cria um container na rede expecificada;
+
+docker network rm name_rede -> exclui a rede expecificada;
+
+

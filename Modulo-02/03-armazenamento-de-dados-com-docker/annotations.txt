@@ -1,0 +1,49 @@
+#Montando mount um local de armazenamento
+
+- Primeiro criar uma pasta -> mkdir /data/nome_do_container;
+- Executar a imagem para criar o container -> docker run -e MYSQL_ROOT_PASSWORD=Senha123 --name mysql-A -d -p 3306:3306 --volume=caminho_da_pasta:/var/lib/mysql mysql -> dessa forma quando o container for excluido e criado um novo no mesmo volume o que foi salvo no container anterior passara para o novo;
+
+
+-v, -> cria um volume do tipo bind;
+
+
+#Bind Mount
+
+ docker run -dti --mount type=bind,src=/caminho_pasta_da_maquina,dst=/caminho_pasta_do_container nome_da_imagem   
+
+ docker run -dti --mount type=bind,src=/caminho_pasta_da_maquina,dst=/caminho_pasta_do_container,ro nome_da_imagem -> somente leitura;
+
+#criando volumes
+
+docker volume create nome_do_volume -> cria uma pasta em /var/lib/docker/volumes/nome_do_volume_criado/_data;
+docker run -dti  --name nome_do_container --mount type=volume,src=nome_do_volume,dst=/caminho_pasta_do_container nome_da_imagem;
+docker volume rm nome_do_volume -> exclui o volume é consequentemente, os arquivo que estavam nele;
+
+
+docker rm -f nome_do_container -> com esse comando, ele para o container e exclui;
+
+docker volume prune -> exclui os volumes que não estão sendo utilizados;
+docker container prune -> exclui os container que não estão em uso;
+
+
+# Rodando uma imagem do Apache
+
+    1 - instalar a imagem do apache -> docker pull httpd
+    obs: sempre verificar a documentação para saber o caminho do container para colocar os documentos;
+
+    2 - cria a pasta do volume do container e salva o arquivo nessa pasta; -> /data/nome_do_volume;
+
+    3 - docker run --name apache-A (nome_do_container) -d -p 80:80 (porta) --volume=/data/apache-A:/usr/local/apache2/htdocs httpd 
+    no volume, primeiro eu coloco o caminho do volume da maquina local e depois seto o caminho do volume do container;
+
+    4 - logo apos, e so rodar o link na porta informada (no caso, ip-da-maquina:80:80);
+
+
+
+# Rodando uma imagem PHP
+
+    1 - fazer o download da imagem -> docker pull php:7.4-apache (observação, no caso do php, ele precisa rodar junto com o apache, então nessa imagem esta especificando a versão da imagem do PHP e instalando junto o apache);
+
+    2 - criar um volume para o container -> criar em @root /data/nome_do_volume e criar o arquivo php la dentro;
+    3 - executar a imagem -> docker run --name php-A (nome_do_container) -d -p 8080:80 (porta para a maquina local: porta do container) --volume=/data/php-A:/var/www/html php:7.4-apache (nome da imagem);
+

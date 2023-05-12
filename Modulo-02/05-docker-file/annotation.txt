@@ -1,0 +1,151 @@
+
+
+# Criando uma imagem com Dockerfile para instalar uma imagem Ubuntu e rodar um container que executara um comando para rodar um arquivo em python;
+
+criamos um arquivo em python que pede o nome e printa;
+criamos um arquivo chamado dockerfile na mesma pasta e colocamos as seguintes linhas de comando:
+
+    * FROM ubuntu -> nome da imagem que sera baixada, se quiser usar alguma versão basta colocar name_image:version_imagem;
+
+    * RUN apt update && install -y python3 && apt clean -> comando a ser executado quando instalar a imagem, esse vai instalar o python no container
+
+    COPY app.py /opt/app.py -> copy o arquivo da maquina local para o container
+
+    CMD python 3 /opt/app.py -> comando que vai executar o arquivo copiado
+
+
+    depois na mesma pasta onde esta o arquivo dockerfile executamos o comando: docker build . -t nome_que_quer_dar_para_sua_imagem 
+    executar o container: docker run -ti --name name_container nome_que_quer_dar_para_sua_imagem
+
+
+
+
+
+# CRIANDO UMA IMAGEM PERSONALIZADA DO APACHE
+
+
+ - criado uma pasta images/debian-apache e criado uma pasta chamada site, depois foi baixado os arquivos nesta pasta (site) -> wget http://site1368633667.hospedagemdesites.ws/site1.zip;
+
+ - feito isso nos desconpactamos o arquivo site1.zip na pasta site e compactamos essa mesma pasta como .tar -> tar -czf site.tar;
+
+ - logo apos copiamos o arquivo tar para a pasta images/debian-apache cp site.tar ../ e excluimos a pasta site;
+
+ - criar um aquivo Dockerfile e inserir o seguintes codigos: 
+    
+    FROM debian -> imagem a ser baixada
+
+    RUN apt-get update && apt-get install -y apache2 && apt-get clean - comando que vai instalar o apache no container
+
+    ENV APACHE_LOCK_DIR="var/lock" -> configuração das variaveis de ambiente
+    ENV APACHE_PID_FILE="var/run/apache2.pid" -> configuração das variaveis de ambiente
+    ENV APACHE_RUN_USER="www-data" -> configuração das variaveis de ambiente
+    ENV APACHE_RUN_GROUP="www-data" -> configuração das variaveis de ambiente
+    ENV APACHE_LOG-DIR="/var/log/apache2" -> configuração das variaveis de ambiente
+
+    ADD site.tar /var/www/html -> vai copiar o arquivo site.tar na maquina local no caminho (/var/www/html) informado no container;
+
+    LABEL description = "Apache webserver 1.0" -> especificar a descrisão
+
+    VOLUME /var/www/html -> volume onde os dados serão salvos
+
+    EXPOSE 80 -> porta exposta no container, por padrão, no apache é a 80
+
+    ENTRYPOINT ["/usr/sbin/apachectl"] -> como vai ter uma aplicação que ser executada em primeiro plano, vai usar o entrypoint (no exemplo anterior, foi usado o cmd) especifica o arquivo que executa o apache;
+
+    CMD ["-D", "FOREGROUND"]
+
+ - agora é so gerar a imagem =>  docker imagem build -t debian-apache:1.0 (name_image:versão);
+ - subir imagem => docker run -dti -p 80:80 (porta da maquina local: porta do container) --name name_container debian-apache:1.0 (nome_da_image:versão);
+
+
+
+
+ # CRIANDO IMAGEM PERSONALIZADAS A PARTIR DE IMAGENS DE LINGUAENS DE PROGRAMAÇÃO
+
+  - criar uma pasta /images/python;
+
+  - criar arquivo .py -> nano app.py -> escrever um codigo em python;
+
+  - criar Dockerfile -> nano Dockerfile na mesma pasta (/images/python) -> escrever o seguinte codigo:
+
+    FROM python -> (name_image)
+
+    WORKDIR /usr/src/app -> diretorio que vamos trabalhar dentro do container
+
+    COPY app.py /usr/src/app -> copiar arquivo app.py da maquina local para o container;
+
+    CMD ["python", "./app.py"] -> ["comando do cmd", "local/nome_do_aquivo_que_vai_ser_executado.py"] -> nesse caso como especificamos o local de trabalho, não teve necessidade de repetir no comando do CMD;
+
+  - docker image build -t app-python:1.0 . -> gerar a imagem;
+  - docker run -ti --name runapp1 app-python:1.0 -> subir a imagem na versão 1.0 com o nome do container runapp1
+ 
+
+
+        
+
+# Gerando uma imagem MULTISTAGE
+
+ obs: criar uma imagem pequena para enviar para o hub;
+
+ - docker pull golang -> imagem do golang possui 778MB;
+ - docker pull alpine -> possui 7.05MB;
+
+ - primeiro criar um arquivo .go com um codigo simples (somente para teste);
+ - criar arquivo Dockerfile (na mesma pasta) com os seguintes comandos: 
+    FROM golang as exec -> estou chamando a importação do golang de exec
+
+    COPY app.go /go/src/app/ -> copio o arquivo app.go para a pasta /go/src/app/
+
+    ENV GO111MODULE=auto -> variavel de ambiente
+
+    WORKDIR /go/src/app -> diretorio do trabalho do container
+
+    RUN go build -o app.go . -> aqui eu estou criar o arquivo executavel com o mesmo nome do arquivo app.go
+
+    FROM alpine -> pegando a imagem
+
+    WORKDIR /appexec -> diretorio de trabalho do container
+    COPY --from=exec /go/src/app/ /appexec -> copiar o arquivo executavel que foi gerado acima para a pasta /appexec (por isso a importancia do as exec)
+
+    RUN chmod -R 755 /appexec -> realizando alterações nas permissões do diretorio
+    ENTRYPOINT ./app.go -> (aqui esta utilizando o formato bash)
+
+- gerar a image -> docker image build -t app-go:1.0 .
+- rodar a imagem -> docker run -ti --name meuappOK app-go:1.0;
+
+obs: a imagem tem apenas 11.1MB junto com alpine;
+
+# Realizando o upload de imagens para o Hub do Docker
+
+ - executar o comando -> docker login -> vai pedir o username e Password:
+ - na pasta do arquivos (Dockerfile) executar o comando para gerar a imagem -> docker build . -t username/nome_da_imagem:versão
+ - para subir -> docker push username/nome_da_imagem:versão;
+
+
+ # Registry Criando um servidor de imagens
+
+ - Para facilitar o exemplo foi criada duas maquinas virtuais, uma maquina onde vamos armazenar as nossas imagens (servidor) e 
+ outra é onde vamos baixar as imagens (mquina local);
+
+ - Na maquina para armazenar imagens vamos instalar o docker e depois baixar a imagem do registry e gerar o container -> docker run -d -p 5000:5000 (porta padrão do registry) --restart=always --name registry:2;
+
+ - Na maquina local, deslogamos do docker hub no terminal (caso tenha logado) -> docker logout;
+
+ - Na imagem que queremos enviar para o servidor, vamos "tagiala" para não precisar duplica-la -> docker image tag image_id ip-servidor:5000/nome-da-aplicação:versão;
+
+ - para verificar quais imagens estão no servidor pelo terminal da maquina local -> curl ip-servidor:5000/v2/_catalog;
+
+ - realizar a alteração no arquivo /etc/docker/daemon.json -> executar comando nano /etc/docker/daemon.json no terminal e inserir o seguinte codigo -> { "insecure-registries":["ip-servidor:5000"] }, depois salve e feche o arquivo;
+
+ - reinicie o docker ->  systemctl restart docker;
+
+ - depois é so subir a imagem para o servidor ->  docker push ip-servidor:5000/nome_da_imagem:1.0;
+
+ - para baixar a imagem do servidor -> docker pull ip-servidor:5000/nome_da_imagem:1.0;
+
+
+
+
+
+
+

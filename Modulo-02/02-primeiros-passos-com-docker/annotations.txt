@@ -1,0 +1,56 @@
+# Instalação docker: 
+    - De acordo com a Aula, foi instalado uma VM com Ubuntu Server;
+    - Deixar placa de rede no modo bridge;
+    - Realizado acesso remoto no sistema local (login: ubuntuserver senha: 1234);
+    - Install Docker Engine on Ubuntu: https://docs.docker.com/engine/install/ubuntu/;
+        - curl -fsSL https://test.docker.com -o test-docker.sh
+        - sudo sh test-docker.sh;
+
+
+# comandos do docker;
+    - docker help -> mostra a lista de comandos;
+    - docker ps -> verifica os containers que estão em execução;
+    - docker ps -a -> verifica o status dos containers que estão e não estão sendo executados;
+    - docker run nome_da_imagem -> executa a imagem;
+    - docker run nome_da_imagem 10 -> executa a imagem durante 10 segundos;
+    - docker run -it nome_da_imagem -> -t aloca um pseudo terminal -i aciona um modo interativo;
+    - docker images -> lista as imagens baixadas;
+    - docker pull nome_da_imagem -> baixa a imagem;
+    - docker exec nome_da_imagem -> permite executar comandos em um contêiner já em execução;
+
+    # sintaxe velha e a nova
+    - docker container ls -> docker ps
+    - docker container images -> docker images;
+
+    - docker run -dti nome_da_imagem -> roda a imagem em background, assim quando sair do contaner a imagem continuara em execução;
+    - docker stop id_container -> deixará o container offiline (pode ser os tres primeiros digitos caso não tenha nenhum outro container com a mesma sequência);
+
+    - docker rm id_container -> remover um container;
+    - docker rmi nome_da_imagem -> remove uma imagem;
+    - docker run -dti nome_da_imagem -> vai rodar a imagem em background no modo interativo, mas se não achar a imagem fara o download;
+
+    - docker run -dti --name nome_do_container nome_da_imagem -> ao rodar a imagem e passar um nome para o container;
+
+    - docker cp nome_do_aquivo nome_do_container:/nome_da_pasta -> copia um aquivo da maquina local para o container;
+    - docker cp nome_do_container:/local/nome_do_aquivo nome_do_aquivo_na_maquina_local -> copia um arquivo do container para a maquina local;
+
+
+    #Instalando uma versão especifica da imagem - TAG
+    Por exemplo: para instalar a versão 9 do debian -> docker pull debian:9
+
+    #instalando e configurando um container com MySQL
+        - intalação -> docker pull mysql -> instala a versão latest da imagem do MySQL;
+        - run -> docker run -e MYSQL_ROOT_PASSWORD=Senha123 (definir a senha/variavel de ambiente) --name mysql-A (nome do container) -d (executar em background) -p 3306:3306 (definir a porta) mysql -> 
+            (-p -publicar as portas do container no host
+            -e -setar as variaveis de ambiente
+            -d -executa em background)
+        
+        - exec -> docker exec -it nome_do_container_mysql bash
+        - ao entrar no container digitar o comando mysql -u root -p --protocol=(tipo de protocolo, normalmente tcp) e depois dgitar a senha definida;
+
+    - docker inspect nome_do_container -> nos tras as informações do container incluindo a porta que esta sendo utilizada e o IP utilizado;
+
+    - docker stop nome_do_container -> para a execução do container;
+    - docker start nome_do_container -> starta a execução do container;
+
+Obs: em um sistema linux para instalar algum programa via terminal e necessario fazer o apt upgrade e apt update

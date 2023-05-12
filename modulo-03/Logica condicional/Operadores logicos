@@ -1,0 +1,4 @@
+conjução = && and;
+dijunção = || or;
+shore = ^
+negação = !
